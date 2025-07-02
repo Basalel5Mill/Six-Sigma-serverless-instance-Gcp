@@ -1,0 +1,44 @@
+# https://www.cloudskillsboost.google/focuses/15845?parent=catalog
+# in progress
+
+name: provision-service-function
+
+on:
+  workflow_dispatch:
+    inputs:
+        service_name:
+          description: 'Which module to re-deploy'
+          required: true
+          default: 'function_test_service'
+
+jobs:
+  update_specific_resource:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+    - uses: actions/checkout@v3
+    - run: ls
+    - run: |
+        echo "Log level: ${{ inputs.service_name }}"
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/${{ vars.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/idpool/providers/idprovider'
+        service_account: ${{ vars.GCP_GITHUB_SERVICE_ACCOUNT }}
+        token_format: 'access_token'
+    - name: Terraform Init
+      id: init
+      run: terraform -chdir=infra init
+    - run: ls -la infra
+    - name: Terraform taint
+      id: taint
+      run: terraform -chdir=infra taint module.${{ inputs.service_name }}.google_cloudfunctions2_function.function
+    - name: Terraform taint2
+      id: taint2
+      run: terraform -chdir=infra taint module.${{ inputs.service_name }}.google_cloud_run_service_iam_binding.default
+    - name: Terraform Apply
+      id: apply
+      run: terraform -chdir=infra apply -auto-approve

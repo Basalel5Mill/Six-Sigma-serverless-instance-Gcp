@@ -1,0 +1,37 @@
+{
+    "name": "nodejs-docs-samples-functions-hello-world-http",
+    "version": "0.0.1",
+    "private": true,
+    "license": "Apache-2.0",
+    "author": "Volodymyr Vyshko",
+    "repository": {
+        "type": "git"
+    },
+    "engines": {
+        "node": ">=12.0.0"
+    },
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "dev": "npx tsc-watch --onSuccess \"npm run start\"",
+        "start": "cross-env GOOGLE_CLOUD_PROJECT=learning-words-trial-2 GOOGLE_APPLICATION_CREDENTIALS=\"../../infra/gcp-service-account-credentials.json\" npx functions-framework --target=main",
+        "gcp-build": "npm run build"
+    },
+    "dependencies": {
+        "@fastify/cors": "^8.2.1",
+        "@google-cloud/firestore": "^6.5.0",
+        "@google-cloud/functions-framework": "^3.1.0",
+        "@google-cloud/secret-manager": "^4.2.1",
+        "@google-cloud/translate": "^7.2.1",
+        "escape-html": "^1.0.3",
+        "fastify": "^4.15.0",
+        "jsonwebtoken": "9.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^18.15.10",
+        "cross-env": "^7.0.3",
+        "tsc-watch": "^6.0.0",
+        "typescript": "^5.0.2",
+        "uuid": "^9.0.0"
+    }
+}

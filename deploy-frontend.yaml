@@ -1,0 +1,46 @@
+name: publish-frontend-to-bucket
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - frontend/client-app/**
+
+jobs:
+  upload_fe:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    - run: ls
+    - run: cp -r frontend/client-app/* .
+    - run: cp -r frontend/client-app/.eslintrc.js .
+    - run: ls -la
+    - run: npm i 
+    - run: npm run build
+      env:
+        CI: "" 
+    - run: npm run postbuild 
+    - run: ls -la 
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/${{ vars.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/idpool/providers/idprovider'
+        service_account: ${{ vars.GCP_GITHUB_SERVICE_ACCOUNT }}
+        token_format: 'access_token'
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+    - name: Delete files from bucket
+      run: gsutil rm gs://vovanoktk-static/**
+    - id: 'upload-file'
+      uses: 'google-github-actions/upload-cloud-storage@v1'
+      with:
+        path: 'build'
+        destination: 'vovanoktk-static'
+        parent: false
